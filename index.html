@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Memory Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100%;
+            background: #1d2e2d;
+        }
+
+        :root {
+            --darkest: #4B7C74;
+            --dark: #6A9A8F;
+            --medium: #8BB6AA;
+            --light: #A9D1C5;
+            --lightest: #C8EAE1;
+            --accent1: #E0E6E3;
+            --accent2: #305050;
+            --error: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1d2e2d 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Only switch to top alignment on very short screens */
+        @media (max-height: 600px) {
+            body {
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-height: calc(100vh - 40px);
+            max-height: calc(100dvh - 40px);
+            overflow-y: auto;
+        }
+
+        /* Only adjust container margins on very short screens */
+        @media (max-height: 600px) {
+            .container {
+                margin-top: 0;
+                margin-bottom: 20px;
+                max-height: calc(100vh - 40px);
+                max-height: calc(100dvh - 40px);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--accent1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--accent1);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        h3 {
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .verse-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .verse-reference {
+            font-size: 1.1rem;
+            color: var(--light);
+            margin-top: 8px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 40px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed var(--light);
+            border-radius: 5px;
+            margin: 0 3px;
+            vertical-align: middle;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        .blank.filled {
+            background: var(--medium);
+            border: 2px solid var(--medium);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .blank.correct {
+            background: var(--light);
+            border: 2px solid var(--light);
+            animation: correctPulse 0.5s ease-in-out;
+        }
+
+        .blank.next-blank {
+            border: 2px solid var(--lightest);
+            box-shadow: 0 0 10px rgba(200, 234, 225, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .word-tiles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .word-tile {
+            padding: 6px 12px !important;
+            background: var(--medium) !important;
+            color: white !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            transition: all 0.3s ease !important;
+            border: 2px solid transparent !important;
+            user-select: none !important;
+            min-height: 25px !important;
+            max-height: 25px !important;
+            height: 25px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-sizing: border-box !important;
+            line-height: 1 !important;
+            overflow: hidden !important;
+        }
+
+        .word-tile:hover {
+            background: var(--light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .word-tile.selected {
+            background: var(--light);
+            border-color: white;
+        }
+
+        .word-tile.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--dark);
+            color: var(--darkest);
+        }
+
+        .input-blank {
+            display: inline-block;
+            min-width: 40px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--light);
+            border-radius: 5px;
+            margin: 0 3px;
+            padding: 0 1px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--accent2);
+            font-weight: 600;
+            autocomplete: off;
+            autocorrect: off;
+            autocapitalize: off;
+            spellcheck: false;
+        }
+
+        .input-blank:focus {
+            outline: none;
+            border-color: var(--lightest);
+            box-shadow: 0 0 0 3px rgba(200, 234, 225, 0.3);
+        }
+
+        .input-blank.correct {
+            background: var(--light);
+            color: white;
+            border-color: var(--light);
+        }
+
+        .input-blank.next-input {
+            border: 2px solid var(--lightest);
+            box-shadow: 0 0 10px rgba(200, 234, 225, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .reference-blank {
+            display: inline-block;
+            min-width: 40px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--light);
+            border-radius: 5px;
+            margin: 0 3px;
+            padding: 0 1px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--accent2);
+            font-weight: 600;
+            autocomplete: off;
+            autocorrect: off;
+            autocapitalize: off;
+            spellcheck: false;
+        }
+
+        .reference-blank:focus {
+            outline: none;
+            border-color: var(--lightest);
+            box-shadow: 0 0 0 2px rgba(200, 234, 225, 0.3);
+        }
+
+        .reference-blank.correct {
+            background: var(--light);
+            color: white;
+            border-color: var(--light);
+        }
+
+        .button {
+            padding: 15px 30px;
+            margin: 10px auto;
+            background: var(--medium);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: block;
+            text-align: center;
+            line-height: 1.2;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .button:hover {
+            background: var(--light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: var(--dark);
+        }
+
+        .button.secondary:hover {
+            background: var(--medium);
+        }
+
+        #level-celebration {
+            background: linear-gradient(45deg, var(--medium), var(--light));
+            padding: 40px;
+            border-radius: 15px;
+            animation: celebrate 0.6s ease-in-out;
+            text-align: center;
+            color: var(--accent2);
+        }
+
+        #level-celebration .level-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0px;
+            margin-top: 5px;
+        }
+
+        #level-celebration .button {
+            margin: 0px auto 10px auto;
+            width: auto;
+        }
+
+        .celebration h3 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--accent2);
+        }
+
+        .celebration .button {
+            background: var(--accent2);
+            color: white;
+        }
+
+        .celebration .button:hover {
+            background: var(--darkest);
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--medium), var(--light));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .level-buttons .button {
+            margin: 5px auto;
+        }
+
+        .instruction-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(48, 80, 80, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .instruction-content {
+            background: linear-gradient(45deg, var(--medium), var(--light));
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            color: white;
+        }
+
+        .instruction-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--accent2);
+        }
+
+        .instruction-content p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: var(--accent2);
+        }
+
+        .instruction-content .button {
+            background: var(--accent2);
+            color: white;
+        }
+
+        .instruction-content .button:hover {
+            background: var(--darkest);
+        }
+
+        .loading {
+            font-size: 1.1rem;
+            color: var(--light);
+            margin: 20px 0;
+        }
+
+        .error {
+            font-size: 1rem;
+            color: var(--error);
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--error);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Opening Screen -->
+        <div id="opening-screen">
+            <h1>Bible Memory Challenge</h1>
+            <p style="font-size: 1.2rem; margin-bottom: 30px; color: var(--accent1);">
+                Learn and memorize God's Word through daily challenges!
+            </p>
+            <button class="button" onclick="playWeeklyVerse()">Play This Week's Verse</button>
+            <button class="button secondary" onclick="playRandomVerse()">Play A Random Verse</button>
+            <div id="loading" class="loading hidden">Loading verse...</div>
+            <div id="error" class="error hidden">Failed to load verse. Please try again.</div>
+        </div>
+
+        <!-- Verse Reading Screen -->
+        <div id="verse-reading-screen" class="hidden">
+            <h2>Today's Verse</h2>
+            <div id="verse-display" style="font-size: 1.5rem; margin: 30px 0; color: white; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);">
+                <!-- Verse will be loaded here -->
+            </div>
+            <div id="reference-display" style="font-size: 1.5rem; color: var(--accent1); margin-bottom: 30px; font-weight: 600;">
+                <!-- Reference will be loaded here -->
+            </div>
+            <p style="font-size: 1.1rem; color: var(--accent1); margin: 30px 0; font-style: italic;">
+                Read through today's verse a few times carefully. When you're ready to test your skills, press start!
+            </p>
+            <button class="button" onclick="startGame()">Start</button>
+        </div>
+
+        <!-- Instruction Popup (moved outside game screen) -->
+        <div id="instruction-popup" class="instruction-popup hidden">
+            <div class="instruction-content">
+                <h3 id="instruction-title">How to Play</h3>
+                <p id="instruction-text">Select the missing word to complete the verse.</p>
+                <button class="button" onclick="document.getElementById('instruction-popup').style.display='none'">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <!-- Game Content -->
+            <div id="game-content">
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <h2 id="level-title">Level 1</h2>
+                <div class="verse-text" id="verse-text"></div>
+                <div class="verse-reference" id="verse-reference"></div>
+                <div class="word-tiles" id="word-tiles"></div>
+            </div>
+
+            <!-- Level Celebration Overlay -->
+            <div id="level-celebration" class="celebration hidden">
+                <h3>Excellent Work!</h3>
+                <p style="margin-bottom: 30px;">You've completed this level successfully!</p>
+                <div class="level-buttons">
+                    <button class="button" onclick="replayLevel()">Play This Level Again</button>
+                    <button class="button" id="next-level-btn" onclick="nextLevel()">Next Level</button>
+                </div>
+            </div>
+
+            <!-- Final Celebration Overlay -->
+            <div id="final-celebration" class="celebration hidden">
+                <h3>🎉 Congratulations! 🎉</h3>
+                <p>You've mastered today's verse! Keep up the great work and come back tomorrow for another challenge!</p>
+                <button class="button" onclick="replayLevel()">Play This Level Again</button>
+                <button class="button" onclick="playRandomVerse()">Try A Random Verse</button>
+                <button class="button" onclick="restartGame()">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Force hide popup on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                popup.style.display = 'none';
+            }
+        });
+
+        // Global variables for current verse data
+        let currentVerse = {
+            text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+            book: "John",
+            chapterVerse: "3:16",
+            decoyWords: ["eternal", "everlasting", "forever", "always", "never", "sacrifice", "heaven", "salvation", "mercy", "grace"]
+        };
+        
+        let currentLevel = 1;
+        let blanks = [];
+        let referenceInputs = [];
+        let selectedTile = null;
+        let currentInputIndex = 0;
+
+        // Common words to avoid in levels 1-2
+        const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs', 'all', 'some', 'any', 'many', 'much', 'few', 'little', 'more', 'most', 'less', 'least', 'very', 'too', 'so', 'just', 'only', 'even', 'also', 'well', 'good', 'bad', 'big', 'small', 'new', 'old', 'first', 'last', 'long', 'short', 'high', 'low', 'right', 'left', 'here', 'there', 'where', 'when', 'how', 'what', 'who', 'why', 'yes', 'no', 'not', 'now', 'then', 'up', 'down', 'out', 'over', 'under', 'about', 'into', 'from', 'through'];
+
+        function playWeeklyVerse() {
+            // Hide instruction popup when starting
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                popup.style.display = 'none';
+            }
+            showLoading();
+            // Simulate loading then show verse (in real deployment, this would fetch from Google Sheets)
+            setTimeout(() => {
+                showVerseReading();
+            }, 1000);
+        }
+
+        function playRandomVerse() {
+            // Hide instruction popup when starting
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                popup.style.display = 'none';
+            }
+            showLoading();
+            // Simulate loading then show verse (in real deployment, this would fetch from Google Sheets)
+            setTimeout(() => {
+                showVerseReading();
+            }, 1000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function showVerseReading() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('opening-screen').classList.add('hidden');
+            document.getElementById('verse-reading-screen').classList.remove('hidden');
+            
+            // Display the loaded verse
+            document.getElementById('verse-display').textContent = `"${currentVerse.text}"`;
+            document.getElementById('reference-display').textContent = `${currentVerse.book} ${currentVerse.chapterVerse}`;
+        }
+
+        function startGame() {
+            document.getElementById('verse-reading-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            setupLevel(1);
+        }
+
+        function setupLevel(level) {
+            currentLevel = level;
+            
+            // Show game content, hide celebrations
+            document.getElementById('game-content').classList.remove('hidden');
+            document.getElementById('level-celebration').classList.add('hidden');
+            document.getElementById('final-celebration').classList.add('hidden');
+            
+            document.getElementById('level-title').textContent = `Level ${level}`;
+            
+            // Update reference element
+            const referenceElement = document.getElementById('verse-reference');
+            
+            if (level === 1) {
+                referenceElement.textContent = `${currentVerse.book} ${currentVerse.chapterVerse}`;
+                setupDragDropLevel(4, false);
+                // Show instruction popup after a brief delay
+                setTimeout(() => {
+                    showInstructionPopup("How to Play Level 1 & 2", "Select the missing words to complete the verse by clicking on the word tiles below.");
+                }, 100);
+            } else if (level === 2) {
+                referenceElement.textContent = `${currentVerse.book} ${currentVerse.chapterVerse}`;
+                setupDragDropLevel(8, true);
+            } else if (level === 3) {
+                setupTypingLevel(0.6);
+                setupReferenceInputs();
+                // Show instruction popup after a brief delay
+                setTimeout(() => {
+                    showInstructionPopup("How to Play Level 3 & 4", "Type the missing words to complete the verse and reference. Press Tab or click to move between fields.");
+                }, 300);
+            } else if (level === 4) {
+                setupTypingLevel(1.0);
+                setupReferenceInputs();
+            }
+            
+            updateProgress();
+        }
+
+        function showInstructionPopup(title, text) {
+            console.log('Showing instruction popup:', title);
+            const popup = document.getElementById('instruction-popup');
+            const titleElement = document.getElementById('instruction-title');
+            const textElement = document.getElementById('instruction-text');
+            const gameScreen = document.getElementById('game-screen');
+            
+            // Only show popup if game screen is visible
+            if (gameScreen && !gameScreen.classList.contains('hidden')) {
+                if (titleElement) titleElement.textContent = title;
+                if (textElement) textElement.textContent = text;
+                if (popup) {
+                    popup.classList.remove('hidden');
+                    popup.style.display = 'flex';
+                }
+            }
+        }
+
+        function closeInstructionPopup() {
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentLevel - 1) / 4 * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        function setupDragDropLevel(numBlanks, includeDecoys) {
+            const verseWords = currentVerse.text.split(' ');
+            
+            // Filter out common words for levels 1 and 2
+            const availableIndices = [];
+            for (let i = 0; i < verseWords.length; i++) {
+                const cleanWord = verseWords[i].toLowerCase().replace(/[.,!?]/g, '');
+                if (!commonWords.includes(cleanWord)) {
+                    availableIndices.push(i);
+                }
+            }
+            
+            const selectedIndices = [];
+            while (selectedIndices.length < numBlanks && availableIndices.length > 0) {
+                const randomArrayIndex = Math.floor(Math.random() * availableIndices.length);
+                const wordIndex = availableIndices[randomArrayIndex];
+                if (!selectedIndices.includes(wordIndex)) {
+                    selectedIndices.push(wordIndex);
+                }
+                availableIndices.splice(randomArrayIndex, 1);
+            }
+
+            blanks = selectedIndices.map(index => ({
+                index: index,
+                word: verseWords[index],
+                filled: false
+            }));
+
+            renderVerse();
+            setupWordTiles(includeDecoys);
+        }
+
+        function setupTypingLevel(percentMissing) {
+            const verseWords = currentVerse.text.split(' ');
+            const numToRemove = Math.floor(verseWords.length * percentMissing);
+            const selectedIndices = [];
+            
+            while (selectedIndices.length < numToRemove) {
+                const randomIndex = Math.floor(Math.random() * verseWords.length);
+                if (!selectedIndices.includes(randomIndex)) {
+                    selectedIndices.push(randomIndex);
+                }
+            }
+
+            blanks = selectedIndices.map(index => ({
+                index: index,
+                word: verseWords[index],
+                filled: false
+            }));
+
+            blanks.sort((a, b) => a.index - b.index);
+            currentInputIndex = 0;
+            renderTypingVerse();
+        }
+
+        function renderVerse() {
+            const verseWords = currentVerse.text.split(' ');
+            const verseContainer = document.getElementById('verse-text');
+            if (!verseContainer) return;
+            
+            let html = '';
+            
+            // Sort blanks by their position in the verse for sequential filling
+            const sortedBlanks = [...blanks].sort((a, b) => a.index - b.index);
+            const nextBlankToFill = sortedBlanks.find(b => !b.filled);
+            
+            for (let i = 0; i < verseWords.length; i++) {
+                const blank = blanks.find(b => b.index === i);
+                if (blank) {
+                    const isNext = nextBlankToFill && blank.index === nextBlankToFill.index;
+                    const blankClass = blank.filled ? 'blank filled correct' : (isNext ? 'blank next-blank' : 'blank');
+                    html += `<span class="${blankClass}" data-index="${i}">${blank.filled ? blank.word : ''}</span> `;
+                } else {
+                    html += verseWords[i] + ' ';
+                }
+            }
+            
+            verseContainer.innerHTML = html;
+        }
+
+        function renderTypingVerse() {
+            const verseWords = currentVerse.text.split(' ');
+            const verseContainer = document.getElementById('verse-text');
+            if (!verseContainer) return;
+            
+            let html = '';
+            
+            for (let i = 0; i < verseWords.length; i++) {
+                const blank = blanks.find(b => b.index === i);
+                if (blank) {
+                    const isActive = blanks.indexOf(blank) === currentInputIndex && !blank.filled;
+                    const inputClass = blank.filled ? 'input-blank correct' : (isActive ? 'input-blank next-input' : 'input-blank');
+                    html += `<input type="text" class="${inputClass}" data-index="${i}" 
+                             onkeyup="checkTypedWord(this, ${i})" 
+                             ${isActive ? 'autofocus' : ''} 
+                             ${blank.filled ? 'readonly' : ''} 
+                             value="${blank.filled ? blank.word : ''}" 
+                             placeholder="____"> `;
+                } else {
+                    html += verseWords[i] + ' ';
+                }
+            }
+            
+            verseContainer.innerHTML = html;
+            
+            // Clear word tiles for typing levels
+            const wordTilesContainer = document.getElementById('word-tiles');
+            if (wordTilesContainer) {
+                wordTilesContainer.innerHTML = '';
+            }
+        }
+
+        function setupWordTiles(includeDecoys) {
+            const tilesContainer = document.getElementById('word-tiles');
+            if (!tilesContainer) return;
+            
+            const correctWords = blanks.map(b => b.word);
+            let allWords = [...correctWords];
+            
+            if (includeDecoys) {
+                // Use decoy words from the verse data
+                const availableDecoys = currentVerse.decoyWords.filter(word => !correctWords.includes(word));
+                
+                // Shuffle the available decoys and take the first 4
+                const shuffledDecoys = availableDecoys.sort(() => Math.random() - 0.5);
+                const selectedDecoys = shuffledDecoys.slice(0, 4);
+                
+                allWords = [...correctWords, ...selectedDecoys];
+            }
+            
+            // Shuffle the words
+            allWords.sort(() => Math.random() - 0.5);
+            
+            tilesContainer.innerHTML = allWords.map(word => 
+                `<div class="word-tile" onclick="selectWordTile(this, '${word}')">${word}</div>`
+            ).join('');
+        }
+
+        function selectWordTile(tile, word) {
+            if (tile.classList.contains('used')) return;
+            
+            document.querySelectorAll('.word-tile').forEach(t => t.classList.remove('selected'));
+            tile.classList.add('selected');
+            
+            // Find the next blank to fill (first unfilled blank in verse order)
+            const sortedBlanks = [...blanks].sort((a, b) => a.index - b.index);
+            const currentBlank = sortedBlanks.find(b => !b.filled);
+            
+            if (currentBlank) {
+                if (currentBlank.word === word) {
+                    fillBlank(currentBlank.index, word, tile);
+                } else {
+                    // Wrong word - show feedback
+                    tile.style.background = 'var(--error)';
+                    setTimeout(() => {
+                        tile.style.background = 'var(--medium)';
+                        tile.classList.remove('selected');
+                    }, 500);
+                }
+            }
+        }
+
+        function fillBlank(index, word, tileElement) {
+            const blank = blanks.find(b => b.index === index);
+            if (blank && blank.word === word) {
+                blank.filled = true;
+                tileElement.classList.add('used');
+                
+                // Re-render to update the next blank highlight
+                renderVerse();
+                
+                checkLevelComplete();
+            }
+        }
+
+        function setupReferenceInputs() {
+            const referenceElement = document.getElementById('verse-reference');
+            if (!referenceElement) return;
+            
+            const referenceWords = [currentVerse.book];
+            referenceInputs = referenceWords.map(() => ({ filled: false, word: '' }));
+            
+            if (currentLevel === 3) {
+                // Level 3: Only book name is a blank, rest is displayed
+                let html = '';
+                html += `<input type="text" class="reference-blank" data-ref-index="0" 
+                         onkeyup="checkReferenceWord(this, 0)" 
+                         placeholder="____"> ${currentVerse.chapterVerse}`;
+                referenceElement.innerHTML = html;
+            } else if (currentLevel === 4) {
+                // Level 4: Book name and chapter-verse are blanks
+                let html = '';
+                html += `<input type="text" class="reference-blank" data-ref-index="0" 
+                         onkeyup="checkReferenceWord(this, 0)" 
+                         placeholder="____"> `;
+                html += `<input type="text" class="reference-blank" data-ref-index="1" 
+                         onkeyup="checkReferenceWord(this, 1)" 
+                         placeholder="____">`;
+                referenceElement.innerHTML = html;
+                
+                // Update reference words for level 4
+                referenceWords.push(currentVerse.chapterVerse);
+                referenceInputs = referenceWords.map(() => ({ filled: false, word: '' }));
+            }
+        }
+
+        function checkReferenceWord(input, index) {
+            let expectedWord;
+            if (currentLevel === 3) {
+                expectedWord = currentVerse.book;
+            } else if (currentLevel === 4) {
+                expectedWord = index === 0 ? currentVerse.book : currentVerse.chapterVerse;
+            }
+            
+            const typedWord = input.value.trim();
+            
+            if (typedWord.toLowerCase() === expectedWord.toLowerCase()) {
+                referenceInputs[index] = { filled: true, word: expectedWord };
+                input.classList.add('correct');
+                input.value = expectedWord;
+                input.readOnly = true;
+                
+                // Move to next reference input
+                const nextRefInput = document.querySelector(`input[data-ref-index="${index + 1}"]`);
+                if (nextRefInput && !nextRefInput.readOnly) {
+                    nextRefInput.focus();
+                } else {
+                    // If all reference inputs are filled, check if whole level is complete
+                    checkLevelComplete();
+                }
+            }
+        }
+
+        function checkTypedWord(input, index) {
+            const blank = blanks.find(b => b.index === index);
+            const cleanWord = blank.word.replace(/[.,!?]/g, '');
+            const typedWord = input.value.trim();
+            
+            if (typedWord.toLowerCase() === cleanWord.toLowerCase()) {
+                blank.filled = true;
+                input.classList.add('correct');
+                input.value = blank.word;
+                input.readOnly = true;
+                
+                // Move to next input
+                currentInputIndex++;
+                if (currentInputIndex < blanks.length) {
+                    const nextBlank = blanks[currentInputIndex];
+                    const nextInput = document.querySelector(`input[data-index="${nextBlank.index}"]`);
+                    if (nextInput && !nextInput.readOnly) {
+                        nextInput.focus();
+                    }
+                } else {
+                    // All verse blanks filled, move to reference for levels 3 and 4
+                    if (currentLevel >= 3) {
+                        const firstRefInput = document.querySelector(`input[data-ref-index="0"]`);
+                        if (firstRefInput && !firstRefInput.readOnly) {
+                            firstRefInput.focus();
+                        }
+                    }
+                }
+                
+                checkLevelComplete();
+            }
+        }
+
+        function checkLevelComplete() {
+            let verseComplete = blanks.every(blank => blank.filled);
+            let referenceComplete = true;
+            
+            // For levels 3 and 4, also check reference completion
+            if (currentLevel >= 3) {
+                referenceComplete = referenceInputs.every(ref => ref.filled);
+            }
+            
+            if (verseComplete && referenceComplete) {
+                setTimeout(() => {
+                    // Hide game content
+                    const gameContent = document.getElementById('game-content');
+                    const levelCelebration = document.getElementById('level-celebration');
+                    const finalCelebration = document.getElementById('final-celebration');
+                    const nextLevelBtn = document.getElementById('next-level-btn');
+
+                    if (gameContent) {
+                        gameContent.classList.add('hidden');
+                    }
+                    
+                    if (currentLevel === 4) {
+                        // Level 4: Show final celebration
+                        if (finalCelebration) {
+                            finalCelebration.classList.remove('hidden');
+                        }
+                    } else {
+                        // Levels 1-3: Show level celebration
+                        if (levelCelebration) {
+                            levelCelebration.classList.remove('hidden');
+                        }
+                        if (nextLevelBtn) {
+                            nextLevelBtn.textContent = currentLevel === 3 ? 'Final Level' : `Level ${currentLevel + 1}`;
+                        }
+                    }
+                }, 500);
+            }
+        }
+
+        function replayLevel() {
+            setupLevel(currentLevel);
+        }
+
+        function nextLevel() {
+            if (currentLevel < 4) {
+                setupLevel(currentLevel + 1);
+            }
+        }
+
+        function restartGame() {
+            currentLevel = 1;
+            // Hide the instruction popup when going back to opening screen
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                popup.style.display = 'none';
+            }
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('opening-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
