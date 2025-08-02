@@ -449,6 +449,19 @@
             border-radius: 8px;
             border: 1px solid var(--error);
         }
+
+        #final-celebration {
+            background: linear-gradient(45deg, var(--medium), var(--light));
+            padding: 40px;
+            border-radius: 15px;
+            animation: celebrate 0.6s ease-in-out;
+            text-align: center;
+            color: var(--accent1);
+        }
+
+        #final-celebration h3 {
+            color: var(--accent1);
+        }
     </style>
 </head>
 <body>
@@ -547,24 +560,143 @@
         let selectedTile = null;
         let currentInputIndex = 0;
 
-        // Common words to avoid in levels 1-2
+        // Google Sheets CSV URL (your actual sheet)
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTlOu4EICdANrHrrioRwlcscTWa9F93DhpmzChHbf7njZ7KHbTdg08A8eOJQDjEynGxvnbiKIIFZ82k/pub?output=csv';
         const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs', 'all', 'some', 'any', 'many', 'much', 'few', 'little', 'more', 'most', 'less', 'least', 'very', 'too', 'so', 'just', 'only', 'even', 'also', 'well', 'good', 'bad', 'big', 'small', 'new', 'old', 'first', 'last', 'long', 'short', 'high', 'low', 'right', 'left', 'here', 'there', 'where', 'when', 'how', 'what', 'who', 'why', 'yes', 'no', 'not', 'now', 'then', 'up', 'down', 'out', 'over', 'under', 'about', 'into', 'from', 'through'];
 
-        function playWeeklyVerse() {
-            // Hide instruction popup when starting
-            const popup = document.getElementById('instruction-popup');
-            if (popup) {
-                popup.classList.add('hidden');
-                popup.style.display = 'none';
+        // Google Sheets Integration Functions
+        async function fetchVerseData() {
+            try {
+                console.log('Fetching data from:', SHEET_URL);
+                const response = await fetch(SHEET_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                console.log('Raw CSV data:', csvText.substring(0, 200) + '...');
+                
+                const verses = parseCSV(csvText);
+                console.log('Parsed verses:', verses);
+                return verses;
+            } catch (error) {
+                console.error('Error fetching verse data:', error);
+                throw error;
             }
-            showLoading();
-            // Simulate loading then show verse (in real deployment, this would fetch from Google Sheets)
-            setTimeout(() => {
-                showVerseReading();
-            }, 1000);
         }
 
-        function playRandomVerse() {
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+                throw new Error('CSV file is empty or has no data rows');
+            }
+            
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            console.log('CSV Headers:', headers);
+            
+            const verses = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= 5) { // At least 5 columns required
+                    const verse = {
+                        startDate: values[0]?.trim().replace(/"/g, ''),
+                        endDate: values[1]?.trim().replace(/"/g, ''),
+                        text: values[2]?.trim().replace(/"/g, ''),
+                        book: values[3]?.trim().replace(/"/g, ''),
+                        chapterVerse: values[4]?.trim().replace(/"/g, ''),
+                        decoyWords: getDummyWords(values, headers)
+                    };
+                    
+                    if (verse.text && verse.book && verse.chapterVerse) {
+                        verses.push(verse);
+                    }
+                }
+            }
+            
+            console.log('Final parsed verses:', verses);
+            return verses;
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current);
+            return values;
+        }
+
+        function getDummyWords(values, headers) {
+            const dummyWords = [];
+            for (let i = 1; i <= 10; i++) {
+                const columnName = `Dummy Word ${i}`;
+                const columnIndex = headers.indexOf(columnName);
+                if (columnIndex !== -1 && columnIndex < values.length) {
+                    const word = values[columnIndex]?.trim().replace(/"/g, '');
+                    if (word && word.length > 0) {
+                        dummyWords.push(word);
+                    }
+                }
+            }
+            console.log('Extracted dummy words:', dummyWords);
+            return dummyWords;
+        }
+
+        function getCurrentWeekVerse(verses) {
+            if (!verses || verses.length === 0) {
+                console.log('No verses available for weekly selection');
+                return null;
+            }
+
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            console.log('Today\'s date:', todayStr);
+            
+            for (const verse of verses) {
+                console.log(`Checking verse: ${verse.book} ${verse.chapterVerse}`);
+                console.log(`Start: ${verse.startDate}, End: ${verse.endDate}, Today: ${todayStr}`);
+                
+                if (verse.startDate && verse.endDate) {
+                    if (todayStr >= verse.startDate && todayStr <= verse.endDate) {
+                        console.log('Found matching verse for this week:', verse);
+                        return verse;
+                    }
+                }
+            }
+            
+            console.log('No verse found for current week, returning first verse');
+            return verses[0]; // Fallback to first verse if no date match
+        }
+
+        function getRandomVerse(verses) {
+            if (!verses || verses.length === 0) {
+                console.log('No verses available for random selection');
+                return null;
+            }
+
+            const randomIndex = Math.floor(Math.random() * verses.length);
+            const selectedVerse = verses[randomIndex];
+            console.log(`Selected random verse ${randomIndex + 1} of ${verses.length}:`, selectedVerse);
+            return selectedVerse;
+        }
+
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+        }
+
+        async function playWeeklyVerse() {
             // Hide instruction popup when starting
             const popup = document.getElementById('instruction-popup');
             if (popup) {
@@ -572,10 +704,48 @@
                 popup.style.display = 'none';
             }
             showLoading();
-            // Simulate loading then show verse (in real deployment, this would fetch from Google Sheets)
-            setTimeout(() => {
-                showVerseReading();
-            }, 1000);
+            try {
+                const verses = await fetchVerseData();
+                console.log('Fetched verses:', verses);
+                const verse = getCurrentWeekVerse(verses);
+                console.log('Selected weekly verse:', verse);
+                
+                if (verse) {
+                    currentVerse = verse;
+                    showVerseReading();
+                } else {
+                    showError();
+                }
+            } catch (error) {
+                console.error('Error loading weekly verse:', error);
+                showError();
+            }
+        }
+
+        async function playRandomVerse() {
+            // Hide instruction popup when starting
+            const popup = document.getElementById('instruction-popup');
+            if (popup) {
+                popup.classList.add('hidden');
+                popup.style.display = 'none';
+            }
+            showLoading();
+            try {
+                const verses = await fetchVerseData();
+                console.log('Fetched verses for random:', verses);
+                const verse = getRandomVerse(verses);
+                console.log('Selected random verse:', verse);
+                
+                if (verse) {
+                    currentVerse = verse;
+                    showVerseReading();
+                } else {
+                    showError();
+                }
+            } catch (error) {
+                console.error('Error loading random verse:', error);
+                showError();
+            }
         }
 
         function showLoading() {
