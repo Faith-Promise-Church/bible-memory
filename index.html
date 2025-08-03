@@ -125,8 +125,8 @@
         }
 
         .blank.filled {
-            background: var(--medium);
-            border: 2px solid var(--medium);
+            background: var(--dark);
+            border: 2px solid var(--dark);
             color: white;
             display: inline-flex;
             align-items: center;
@@ -135,8 +135,8 @@
         }
 
         .blank.correct {
-            background: var(--light);
-            border: 2px solid var(--light);
+            background: var(--dark);
+            border: 2px solid var(--dark);
             animation: correctPulse 0.5s ease-in-out;
         }
 
@@ -445,7 +445,7 @@
 
         .mascot {
             width: 120px;
-            height: 120px;
+            height: auto;
             margin: 0 auto 20px auto;
             display: block;
             animation: gentleBounce 3s ease-in-out infinite;
@@ -453,7 +453,7 @@
 
         .mascot-small {
             width: 80px;
-            height: 80px;
+            height: auto;
             margin: 0 auto 15px auto;
             display: block;
             animation: celebrate 1s ease-in-out;
@@ -467,12 +467,12 @@
         @media (max-width: 768px) {
             .mascot {
                 width: 80px;
-                height: 80px;
+                height: auto;
             }
             
             .mascot-small {
                 width: 60px;
-                height: 60px;
+                height: auto;
             }
         }
 
