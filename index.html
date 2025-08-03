@@ -43,7 +43,6 @@
             overflow-x: hidden;
         }
 
-        /* Only switch to top alignment on very short screens */
         @media (max-height: 600px) {
             body {
                 align-items: flex-start;
@@ -66,7 +65,6 @@
             overflow-y: auto;
         }
 
-        /* Only adjust container margins on very short screens */
         @media (max-height: 600px) {
             .container {
                 margin-top: 0;
@@ -250,7 +248,6 @@
             display: inline-block;
             min-width: 35px;
             width: 60px;
-            max-width: 80px;
             height: 28px;
             background: rgba(255, 255, 255, 0.9);
             border: 2px solid var(--light);
@@ -266,7 +263,7 @@
             autocorrect: off;
             autocapitalize: off;
             spellcheck: false;
-            overflow: hidden;
+            transition: width 0.2s ease;
         }
 
         .reference-blank:focus {
@@ -445,14 +442,37 @@
             margin: 20px 0;
         }
 
-        .error {
-            font-size: 1rem;
-            color: var(--error);
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255, 71, 87, 0.1);
-            border-radius: 8px;
-            border: 1px solid var(--error);
+        .mascot {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px auto;
+            display: block;
+            animation: gentleBounce 3s ease-in-out infinite;
+        }
+
+        .mascot-small {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px auto;
+            display: block;
+            animation: celebrate 1s ease-in-out;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @media (max-width: 768px) {
+            .mascot {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .mascot-small {
+                width: 60px;
+                height: 60px;
+            }
         }
 
         #final-celebration {
@@ -484,12 +504,24 @@
         #final-celebration .button:hover {
             background: var(--darkest);
         }
+
+        .error {
+            font-size: 1rem;
+            color: var(--error);
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--error);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Opening Screen -->
         <div id="opening-screen">
+            <!-- Mascot Image - Replace src with your actual image path -->
+            <img src="./images/bible-mascot-welcome.png" alt="Bible Memory Mascot" class="mascot" style="display: none;">
             <h1>Bible Memory Challenge</h1>
             <p style="font-size: 1.2rem; margin-bottom: 30px; color: var(--accent1);">
                 Learn and memorize God's Word through daily challenges!
@@ -549,6 +581,8 @@
 
             <!-- Final Celebration Overlay -->
             <div id="final-celebration" class="celebration hidden">
+                <!-- Mascot Image - Replace src with your actual image path -->
+                <img src="./images/bible-mascot-celebration.png" alt="Celebrating Mascot" class="mascot-small" style="display: none;">
                 <h3>🎉 Congratulations! 🎉</h3>
                 <p>You've mastered today's verse! Keep up the great work and come back tomorrow for another challenge!</p>
                 <button class="button" onclick="replayLevel()">Play This Level Again</button>
@@ -953,6 +987,7 @@
                     const inputClass = blank.filled ? 'input-blank correct' : (isActive ? 'input-blank next-input' : 'input-blank');
                     html += `<input type="text" class="${inputClass}" data-index="${i}" 
                              onkeyup="checkTypedWord(this, ${i})" 
+                             oninput="autoResizeInput(this)"
                              ${isActive ? 'autofocus' : ''} 
                              ${blank.filled ? 'readonly' : ''} 
                              value="${blank.filled ? blank.word : ''}" 
@@ -1046,6 +1081,7 @@
                 let html = '';
                 html += `<input type="text" class="reference-blank" data-ref-index="0" 
                          onkeyup="checkReferenceWord(this, 0)" 
+                         oninput="autoResizeInput(this)"
                          placeholder="____"> ${currentVerse.chapterVerse}`;
                 referenceElement.innerHTML = html;
             } else if (currentLevel === 4) {
@@ -1053,9 +1089,11 @@
                 let html = '';
                 html += `<input type="text" class="reference-blank" data-ref-index="0" 
                          onkeyup="checkReferenceWord(this, 0)" 
+                         oninput="autoResizeInput(this)"
                          placeholder="____"> `;
                 html += `<input type="text" class="reference-blank" data-ref-index="1" 
                          onkeyup="checkReferenceWord(this, 1)" 
+                         oninput="autoResizeInput(this)"
                          placeholder="____">`;
                 referenceElement.innerHTML = html;
                 
@@ -1184,6 +1222,26 @@
             }
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('opening-screen').classList.remove('hidden');
+        }
+
+        function autoResizeInput(input) {
+            // Create a temporary span to measure text width
+            const tempSpan = document.createElement('span');
+            tempSpan.style.visibility = 'hidden';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.fontSize = '16px';
+            tempSpan.style.fontFamily = 'Quicksand, sans-serif';
+            tempSpan.style.fontWeight = '600';
+            tempSpan.style.padding = '0 2px';
+            tempSpan.textContent = input.value || '____';
+            
+            document.body.appendChild(tempSpan);
+            const textWidth = tempSpan.offsetWidth;
+            document.body.removeChild(tempSpan);
+            
+            // Set width based on content, with minimum of 60px and maximum of 120px
+            const newWidth = Math.max(60, Math.min(120, textWidth + 8));
+            input.style.width = newWidth + 'px';
         }
     </script>
 </body>
