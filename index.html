@@ -166,7 +166,7 @@
 
         .word-tile {
             padding: 6px 12px !important;
-            background: var(--medium) !important;
+            background: var(--dark) !important;
             color: white !important;
             border-radius: 5px !important;
             cursor: pointer !important;
@@ -187,21 +187,22 @@
         }
 
         .word-tile:hover {
-            background: var(--light);
+            background: var(--medium);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .word-tile.selected {
-            background: var(--light);
+            background: var(--medium);
             border-color: white;
         }
 
         .word-tile.used {
             opacity: 0.5;
             cursor: not-allowed;
-            background: var(--dark);
-            color: var(--darkest);
+            background: var(--darkest);
+            color: var(--accent1);
+            transform: translateY(0px) !important;
         }
 
         .input-blank {
@@ -521,7 +522,7 @@
         <!-- Opening Screen -->
         <div id="opening-screen">
             <!-- Mascot Image - Replace src with your actual image path -->
-            <img src="./images/bible-mascot-welcome.png" alt="Bible Memory Mascot" class="mascot" style="display: none;">
+            <img src="./images/bible-mascot-welcome.png" alt="Bible Memory Mascot" class="mascot">
             <h1>Bible Memory Challenge</h1>
             <p style="font-size: 1.2rem; margin-bottom: 30px; color: var(--accent1);">
                 Learn and memorize God's Word through daily challenges!
@@ -582,7 +583,7 @@
             <!-- Final Celebration Overlay -->
             <div id="final-celebration" class="celebration hidden">
                 <!-- Mascot Image - Replace src with your actual image path -->
-                <img src="./images/bible-mascot-celebration.png" alt="Celebrating Mascot" class="mascot-small" style="display: none;">
+                <img src="./images/bible-mascot-celebration.png" alt="Celebrating Mascot" class="mascot-small">
                 <h3>🎉 Congratulations! 🎉</h3>
                 <p>You've mastered today's verse! Keep up the great work and come back tomorrow for another challenge!</p>
                 <button class="button" onclick="replayLevel()">Play This Level Again</button>
